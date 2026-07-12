@@ -28,7 +28,7 @@
 		led-running = &led_system_blue;
 		led-failsafe = &led_system_red;
 		led-upgrade = &led_system_green;
-		label-mac-device = &dp2;
+		label-mac-device = &dp5;
 	};
 
 	chosen {
@@ -297,6 +297,17 @@
 				label = "devinfo";
 				reg = <0x1060000 0x20000>;
 				read-only;
+
+				nvmem-layout {
+					compatible = "ascii-eq-delim-env";
+					#address-cells = <1>;
+					#size-cells = <1>;
+
+					hw_mac_addr: hw_mac_addr {
+						compatible = "mac-base";
+						#nvmem-cell-cells = <1>;
+					};
+				};
 			};
 
 			partition@1080000 {
@@ -476,30 +487,40 @@
 	status = "okay";
 	phy-handle = <&qca8075_0>;
 	label = "lan1";
+	nvmem-cells = <&hw_mac_addr 1>;
+	nvmem-cell-names = "mac-address";
 };
 
 &dp2 {
 	status = "okay";
 	phy-handle = <&qca8075_1>;
 	label = "lan2";
+	nvmem-cells = <&hw_mac_addr 1>;
+	nvmem-cell-names = "mac-address";
 };
 
 &dp3 {
 	status = "okay";
 	phy-handle = <&qca8075_2>;
 	label = "lan3";
+	nvmem-cells = <&hw_mac_addr 1>;
+	nvmem-cell-names = "mac-address";
 };
 
 &dp4 {
 	status = "okay";
 	phy-handle = <&qca8075_3>;
 	label = "lan4";
+	nvmem-cells = <&hw_mac_addr 1>;
+	nvmem-cell-names = "mac-address";
 };
 
 &dp5 {
 	status = "okay";
 	phy-handle = <&qca8075_4>;
 	label = "wan";
+	nvmem-cells = <&hw_mac_addr 0>;
+	nvmem-cell-names = "mac-address";
 };
 
 &ssphy_0 {
@@ -531,8 +552,8 @@
 			reg = <0x00010000 0 0 0 0>;
 
 			qcom,ath10k-calibration-variant = "Linksys-MX5300";
-			nvmem-cell-names = "pre-calibration";
-			nvmem-cells = <&caldata_qca9984>;
+			nvmem-cell-names = "pre-calibration", "mac-address";
+			nvmem-cells = <&caldata_qca9984>, <&hw_mac_addr 2>;
 		};
 	};
 };
@@ -541,4 +562,6 @@
 	status = "okay";
 
 	qcom,ath11k-calibration-variant = "Linksys-MX5300";
+	nvmem-cells = <&hw_mac_addr 3>;
+	nvmem-cell-names = "mac-address";
 };
