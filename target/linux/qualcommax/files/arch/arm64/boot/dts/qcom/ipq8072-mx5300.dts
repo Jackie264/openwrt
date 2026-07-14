@@ -544,8 +544,8 @@
 			reg = <0x00010000 0 0 0 0>;
 
 			qcom,ath10k-calibration-variant = "Linksys-MX5300";
-			nvmem-cell-names = "pre-calibration", "mac-address";
-			nvmem-cells = <&caldata_qca9984>, <&hw_mac_addr 3>;
+			nvmem-cell-names = "pre-calibration";
+			nvmem-cells = <&caldata_qca9984>;
 		};
 	};
 };
@@ -554,6 +554,4 @@
 	status = "okay";
 
 	qcom,ath11k-calibration-variant = "Linksys-MX5300";
-	nvmem-cells = <&hw_mac_addr 1>, <&hw_mac_addr 2>;
-    nvmem-cell-names = "mac-address-5g", "mac-address-2g";
 };
