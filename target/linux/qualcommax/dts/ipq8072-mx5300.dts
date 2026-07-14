@@ -453,6 +453,8 @@
 			reg = <0>;
 			ethernet = <&edma>;
 			phy-mode = "internal";
+			nvmem-cells = <&hw_mac_addr 0>;
+			nvmem-cell-names = "mac-address";
 
 			fixed-link {
 				speed = <1000>;
@@ -466,8 +468,6 @@
 			phy-handle = <&qca8075_0>;
 			phy-mode = "psgmii";
 			pcs-handle = <&uniphy0 0>;
-			nvmem-cells = <&hw_mac_addr 1>;
-			nvmem-cell-names = "mac-address";
 		};
 
 		swport2: port@2 {
@@ -476,8 +476,6 @@
 			phy-handle = <&qca8075_1>;
 			phy-mode = "psgmii";
 			pcs-handle = <&uniphy0 1>;
-			nvmem-cells = <&hw_mac_addr 1>;
-			nvmem-cell-names = "mac-address";
 		};
 
 		swport3: port@3 {
@@ -486,8 +484,6 @@
 			phy-handle = <&qca8075_2>;
 			phy-mode = "psgmii";
 			pcs-handle = <&uniphy0 2>;
-			nvmem-cells = <&hw_mac_addr 1>;
-			nvmem-cell-names = "mac-address";
 		};
 
 		swport4: port@4 {
@@ -496,8 +492,6 @@
 			phy-handle = <&qca8075_3>;
 			phy-mode = "psgmii";
 			pcs-handle = <&uniphy0 3>;
-			nvmem-cells = <&hw_mac_addr 1>;
-			nvmem-cell-names = "mac-address";
 		};
 
 		swport5: port@5 {
@@ -546,7 +540,7 @@
 
 			qcom,ath10k-calibration-variant = "Linksys-MX5300";
 			nvmem-cell-names = "pre-calibration", "mac-address";
-			nvmem-cells = <&caldata_qca9984>, <&hw_mac_addr 2>;
+			nvmem-cells = <&caldata_qca9984>, <&hw_mac_addr 3>;
 		};
 	};
 };
@@ -555,6 +549,6 @@
 	status = "okay";
 
 	qcom,ath11k-calibration-variant = "Linksys-MX5300";
-	nvmem-cells = <&hw_mac_addr 3>;
-	nvmem-cell-names = "mac-address";
+	nvmem-cells = <&hw_mac_addr 1>, <&hw_mac_addr 2>;
+	nvmem-cell-names = "mac-address-5g", "mac-address-2g";
 };
