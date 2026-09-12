@@ -2,7 +2,7 @@ From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 Subject: [PATCH] wifi: ath12k: workaround for unsupported memory type 10
 
 ---
---- a/drivers/net/wireless/ath/ath12k/qmi.c.orig	2026-09-13 01:01:07.437775779 +0800
+--- a/drivers/net/wireless/ath/ath12k/qmi.c	2026-09-13 01:01:07.437775779 +0800
 +++ b/drivers/net/wireless/ath/ath12k/qmi.c	2026-09-13 01:01:07.438775769 +0800
 @@ -2651,6 +2651,7 @@
  		case PAGEABLE_MEM_REGION_TYPE:
