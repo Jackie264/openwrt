@@ -1,0 +1,101 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+Subject: [PATCH] wifi: ath12k: handle empty regulatory events
+
+---
+ drivers/net/wireless/ath/ath12k/wmi.c | 44 +++++++++++++++++------------
+ 1 file changed, 28 insertions(+), 16 deletions(-)
+
+--- a/drivers/net/wireless/ath/ath12k/wmi.c
++++ b/drivers/net/wireless/ath/ath12k/wmi.c
+@@ -5921,7 +5921,7 @@ static int ath12k_pull_reg_chan_list_ext
+        u32 num_6g_reg_rules_ap[WMI_REG_CURRENT_MAX_AP_TYPE];
+        u32 num_6g_reg_rules_cl[WMI_REG_CURRENT_MAX_AP_TYPE][WMI_REG_MAX_CLIENT_TYPE];
+        u8 num_invalid_5ghz_ext_rules;
+-       u32 total_reg_rules = 0;
++       u32 status_code __maybe_unused, total_reg_rules = 0;
+        int ret, i, j;
+ 
+        ath12k_dbg(ab, ATH12K_DBG_WMI, "processing regulatory ext channel list
+");
+@@ -5940,6 +5940,40 @@ static int ath12k_pull_reg_chan_list_ext
+                return -EPROTO;
+        }
+ 
++       memcpy(reg_info->alpha2, &ev->alpha2, REG_ALPHA2_LEN);
++       reg_info->dfs_region = le32_to_cpu(ev->dfs_region);
++       reg_info->phybitmap = le32_to_cpu(ev->phybitmap);
++       reg_info->num_phy = le32_to_cpu(ev->num_phy);
++       reg_info->phy_id = le32_to_cpu(ev->phy_id);
++       reg_info->ctry_code = le32_to_cpu(ev->country_id);
++       reg_info->reg_dmn_pair = le32_to_cpu(ev->domain_code);
++
++       status_code = le32_to_cpu(ev->status_code);
++       switch (status_code) {
++       case WMI_REG_SET_CC_STATUS_PASS:
++               reg_info->status_code = REG_SET_CC_STATUS_PASS;
++               break;
++       case WMI_REG_CURRENT_ALPHA2_NOT_FOUND:
++               reg_info->status_code = REG_CURRENT_ALPHA2_NOT_FOUND;
++               break;
++       case WMI_REG_INIT_ALPHA2_NOT_FOUND:
++               reg_info->status_code = REG_INIT_ALPHA2_NOT_FOUND;
++               break;
++       case WMI_REG_SET_CC_CHANGE_NOT_ALLOWED:
++               reg_info->status_code = REG_SET_CC_CHANGE_NOT_ALLOWED;
++               break;
++       case WMI_REG_SET_CC_STATUS_NO_MEMORY:
++               reg_info->status_code = REG_SET_CC_STATUS_NO_MEMORY;
++               break;
++       case WMI_REG_SET_CC_STATUS_FAIL:
++               reg_info->status_code = REG_SET_CC_STATUS_FAIL;
++               break;
++       default:
++               ath12k_warn(ab, "unknown regulatory status %u
+", status_code);
++               reg_info->status_code = REG_SET_CC_STATUS_FAIL;
++               break;
++       }
++
+        reg_info->num_2g_reg_rules = le32_to_cpu(ev->num_2g_reg_rules);
+        reg_info->num_5g_reg_rules = le32_to_cpu(ev->num_5g_reg_rules);
+        reg_info->num_6g_reg_rules_ap[WMI_REG_INDOOR_AP] =
+@@ -6082,9 +6116,8 @@ static int ath12k_pull_reg_chan_list_ext
+        }
+ 
+        if (!total_reg_rules) {
+-               ath12k_warn(ab, "No reg rules available
+");
+                kfree(tb);
+-               return -EINVAL;
++               return -ENODATA;
+        }
+ 
+        reg_info->is_ext_reg_event = true;
+@@ -6969,8 +7002,16 @@ static int ath12k_reg_chan_list_event(st
+        }
+ 
+        ret = ath12k_pull_reg_chan_list_ext_update_ev(ab, skb, reg_info);
++       if ((!ret || ret == -ENODATA) && reg_info->phy_id < ab->num_radios)
++               pdev_idx = reg_info->phy_id;
++
+        if (ret) {
+-               ath12k_warn(ab, "failed to extract regulatory info from received event
+");
++               if (ret == -ENODATA && pdev_idx != 255) {
++                       /* Keep the last valid regdomain, but finish this update. */
++                       ret = ATH12K_REG_STATUS_VALID;
++               } else {
++                       ath12k_warn(ab, "failed to extract regulatory info from received event
+");
++               }
+                goto mem_free;
+        }
+ 
+@@ -6990,7 +7031,6 @@ static int ath12k_reg_chan_list_event(st
+        }
+ 
+        /* free old reg_info if it exist */
+-       pdev_idx = reg_info->phy_id;
+        if (ab->reg_info[pdev_idx]) {
+                ath12k_reg_reset_reg_info(ab->reg_info[pdev_idx]);
+                kfree(ab->reg_info[pdev_idx]);
